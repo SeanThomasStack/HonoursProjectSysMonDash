@@ -1,0 +1,99 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+
+<title>EyeOfSauron.com</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+<h1>this is my flask app</h1>
+<br>
+<h2>Storage Metrics</h2>
+<p><strong>Total Space:</strong> {{storage.total}} GB</p>
+<p><strong>Used Space:</strong> {{storage.used}} GB</p>
+<p><strong>Free Space:</strong> {{storage.free}} GB</p>
+
+<div style="width: 50px, height=50px">
+<canvas id = "storageChart" >
+</div>
+<script>
+
+var ctx = document.getElementById('storageChart').getContext('2d');
+
+var storageChart = new Chart (ctx, {
+	type: 'pie',
+	data : {
+		labels: ['Free Storage (GB)', 'Used Storage (GB)'],
+		datasets: [{
+			data: [{{storage.free}}, {{storage.used}}],
+			backgroundColor: ['#33FF57', '#FF5733'],
+			hoverOffset: 4
+		}]
+	},
+	
+	options: {
+		responsive: true,
+		maintainAspectRatio: false
+	}
+});
+
+
+	
+
+
+
+
+
+</script>
+
+<h3>Cpu Stats</h3>
+<p><strong>Cpu Usage:</strong>{{cpu.total_usage}}%</p>
+<p><strong>Cpu Usage per core:</strong>{{cpu.per_cpu}}%</p>
+<p><strong>Cpu temperature:</strong>{{cpu.temperature}}%</p>
+
+<h4>Memory usage</h4>
+<p><strong>Total Memory:</strong>{{memory.total}}</p>
+
+<div style="width: 50px, height=50px">
+<canvas id="memoryChart"></canvas>
+</div>
+<script>
+
+var hello = document.getElementById('memoryChart').getContext('2d');
+
+var memoryChart = new Chart (hello, {
+	type: 'pie',
+	data : {
+		labels: ['Free Memory (GB)', 'Used Memory (GB)'],
+		datasets: [{
+			data: [{{memory.avalible}}, {{memory.used}}],
+			backgroundColor: ['#33FF57', '#FF5733'],
+			hoverOffset: 4
+		}]
+	},
+	
+	options: {
+		responsive: true,
+		maintainAspectRatio: false
+	}
+});
+
+
+	
+
+
+
+
+
+</script>
+
+
+	
+
+</body>
+
+</html>
