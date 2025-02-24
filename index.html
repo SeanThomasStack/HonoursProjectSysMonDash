@@ -54,6 +54,73 @@ var storageChart = new Chart (ctx, {
 <p><strong>Cpu Usage:</strong>{{cpu.total_usage}}%</p>
 <p><strong>Cpu Usage per core:</strong>{{cpu.per_cpu}}%</p>
 <p><strong>Cpu temperature:</strong>{{cpu.temperature}}%</p>
+<span id="cpuValue" style="display: none">{{cpu.total_usage}}</span>
+
+<div style="width: 50px, height=200px">
+<canvas id="cpuChart"></canvas>
+</div>
+
+<script>
+
+var goodbye = document.getElementById('cpuChart').getContext('2d');
+
+var cpuChart = new Chart(goodbye, { 
+		type : 'line',
+		data: {
+			labels: [],
+			datasets: [{
+				label: 'CPU Usage (%)',
+				data: [{{cpu.total_usage}}],
+				borderColor: '#FF5733',
+				backgroundColor: 'rgba(255, 87, 51, 0.2)',
+				fill: true
+			}]
+		},
+		
+		options: {
+			responsive: true,
+			maintainAspectRatio: false,
+			scales: {
+				y: {
+					beginAtZero: true,
+					max: 100
+				}
+			}
+		}
+	});
+
+function updateChart() {
+	fetch(window.location.href)
+		.then(response => response.text())
+		.then(html => {
+			let parser = new DOMParser();
+			let doc = parser.parseFromString(html, "text/html");
+			let newCpuUsage = parseFloat(doc.getElementById("cpuValue").textContent);
+			
+			let now = new Date().toLocaleTimeString();
+			cpuChart.data.labels.push(now);
+			cpuChart.data.datasets[0].data.push(newCpuUsage);
+			
+			if (cpuChart.data.labels.length > 10) {
+				cpuChart.data.labels.shift();
+				cpuChart.data.datasets[0].data.shift();
+			}
+			
+			cpuChart.update();
+		
+		});
+	}
+	
+	setInterval(updateChart, 1000);
+		
+			
+
+
+
+</script>
+
+
+
 
 <h4>Memory usage</h4>
 <p><strong>Total Memory:</strong>{{memory.total}}</p>

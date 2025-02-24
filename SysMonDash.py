@@ -25,8 +25,8 @@ def get_storage_info():
 	}
 
 def get_cpu_info():
-	cpu_usage = psutil.cpu_percent(interval=5)
-	cpu_usage_per_core = psutil.cpu_percent(interval=5, percpu=True)
+	cpu_usage = psutil.cpu_percent(interval=1)
+	cpu_usage_per_core = psutil.cpu_percent(interval=1, percpu=True)
 	temps = psutil.sensors_temperatures()
 
 	if temps:
