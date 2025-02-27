@@ -7,19 +7,167 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+
+<style>
+
+body{
+
+	background-color: black;
+
+}
+
+#topBar {
+	color: #009999;
+	background-color: #d9d9d9;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 10%;
+	flex-wrap: wrap;
+}
+
+
+
+.storageMemoryText {
+	color: white;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 20%;
+	flex-wrap: wrap;
+}
+
+
+.pieChartContainer {
+
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 20px;
+	flex-wrap: wrap;
+}
+
+.pieChartBox {
+
+	width: 45%;
+	max-width: 400px;
+	
+}
+
+canvas {
+	
+	background-color: #d9d9d9;
+	border-radius: 20px;
+	
+}
+
+p,	h1, h2{
+		
+	color: #009999;
+		
+}
+
+button {
+color: #009999;
+background-color: #d9d9d9;
+
+}
+
+
+select {
+
+	color:  #009999;
+}
+
+select option{
+	color:  #009999;
+}
+
+
+
+
+</style>
+
 </head>
 
 <body>
 <h1>this is my flask app</h1>
 <br>
-<h2>Storage Metrics</h2>
-<p><strong>Total Space:</strong> {{storage.total}} GB</p>
-<p><strong>Used Space:</strong> {{storage.used}} GB</p>
-<p><strong>Free Space:</strong> {{storage.free}} GB</p>
 
-<div style="width: 50px, height=50px">
-<canvas id = "storageChart" >
+<div id="topBar">
+<p id="datetime">hello world</p>
+
+<select id="myDropdown" name="options">
+	<option value="" disabled selected>choose an option</option>
+	<option value="option1">snapshot_1</option>
+	<option value="option2">snapshot_2</option>
+</select>
+
+<button>SnapShot</button>
 </div>
+
+
+
+
+<script>
+
+	function updateDateTime() {
+	
+	let now = new Date();
+	let formattedDate = now.toLocaleString('en-GB', {
+		weekday: 'long',
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit',
+		second: '2-digit'
+	});
+	
+	document.getElementById("datetime").innerText = formattedDate;
+}
+
+setInterval(updateDateTime, 1000);
+
+updateDateTime();
+
+
+
+
+</script>
+
+
+
+
+
+
+
+<br>
+
+
+<div class="storageMemoryText">
+
+	<p><strong>Total Storage Space:</strong> {{storage.total}} GB</p>
+	<p><strong>Total Memory Space:</strong>{{memory.total}} GB</p>
+	
+</div>
+
+
+
+
+
+<div class="pieChartContainer">
+	
+	<div class="pieChartBox">
+		<canvas id = "storageChart" ></canvas>
+	</div>
+
+	<div class="pieChartBox">
+		<canvas id="memoryChart"></canvas>
+	</div>
+	
+</div>
+
 <script>
 
 var ctx = document.getElementById('storageChart').getContext('2d');
@@ -38,6 +186,8 @@ var storageChart = new Chart (ctx, {
 	options: {
 		responsive: true,
 		maintainAspectRatio: false
+	
+	
 	}
 });
 
@@ -50,9 +200,8 @@ var storageChart = new Chart (ctx, {
 
 </script>
 
-<h3>Cpu Stats</h3>
-<p><strong>Cpu Usage:</strong>{{cpu.total_usage}}%</p>
-<p><strong>Cpu Usage per core:</strong>{{cpu.per_cpu}}%</p>
+<h2>Cpu Stats</h2>
+
 <p><strong>Cpu temperature:</strong>{{cpu.temperature}}%</p>
 <span id="cpuValue" style="display: none">{{cpu.total_usage}}</span>
 
@@ -114,20 +263,72 @@ function updateChart() {
 	setInterval(updateChart, 1000);
 		
 			
+</script>
 
+<br>
+<span id="dataPerCore" style="display: none;">{{cpu.per_cpu}}</span>
+<div style="width: 50px, height=200px">
+<canvas id="perCpuBarChart"></canvas>
+</div>
 
+<script>
+
+var gutentag = document.getElementById('perCpuBarChart').getContext('2d');
+var initialCpuData = JSON.parse(document.getElementById("dataPerCore").textContent)
+
+var perCpuBarChart = new Chart(gutentag, {
+		type: 'bar',
+		data:	{	
+			labels: initialCpuData.map((_, i) => `Core ${i + 1}`),
+			datasets: [{
+				label: 'CPU Usage Per Core (%)',
+				data: initialCpuData,
+				backgroundColor: 'rgba(54, 162, 235, 0.6)',
+				borderColor: 'rgba(54, 162, 235, 1)',
+				borderWidth: 1
+			}]
+		},
+		
+		options:{
+			responsive: true,
+			maintainAspectRatio: false,
+			scales: {
+				y: {
+					beginAtZero: true,
+					max: 100
+				
+				}
+			}
+		}
+	});
+	
+
+function updateBarChart() {
+	fetch(window.location.href)
+		.then(response => response.text())
+		.then(html => {
+			let parser = new DOMParser();
+			let doc = parser.parseFromString(html, "text/html");
+			let newCpuData = JSON.parse(doc.getElementById("dataPerCore").textContent);
+			
+			perCpuBarChart.data.datasets[0].data = newCpuData;
+			perCpuBarChart.update();
+		
+		});
+	}
+	
+	setInterval(updateBarChart, 1000);	
 
 </script>
 
 
 
 
-<h4>Memory usage</h4>
-<p><strong>Total Memory:</strong>{{memory.total}}</p>
 
-<div style="width: 50px, height=50px">
-<canvas id="memoryChart"></canvas>
-</div>
+<span id="freeMemory" style="display: none;">{{memory['avalible']}}</span>
+<span id="usedMemory" style="display: none;">{{memory['used']}}</span>
+
+
 <script>
 
 var hello = document.getElementById('memoryChart').getContext('2d');
@@ -150,12 +351,29 @@ var memoryChart = new Chart (hello, {
 });
 
 
+function updatePieChart() {
+	fetch(window.location.href)
+	.then(response => response.text())
+	.then(html => {
+		const parser = new DOMParser();
+		const doc = parser.parseFromString(html, 'text/html');
+		
+		const used = parseFloat(doc.getElementById('usedMemory').textContent);
+		const avalible = parseFloat(doc.getElementById('freeMemory').textContent);
+		
+		memoryChart.data.datasets[0].data = [avalible, used];
+		memoryChart.update();
+		
+	})
+}
+
+setInterval(updatePieChart, 1000);
+		
+		
+		
 	
-
-
-
-
-
+	
+	
 </script>
 
 
