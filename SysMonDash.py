@@ -1,6 +1,7 @@
+import json
 import webbrowser
 #imports the flask class from the flask module
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 
 #import the shutil module
 import shutil
@@ -8,10 +9,32 @@ import psutil
 
 import threading
 import time
+import sqlite3
 
 #create an instance of the class __name__ is a
 #shortcut to find flask resources
 app = Flask(__name__)
+
+"snapshot_storage.db"
+
+def create_database():
+	conn = sqlite3.connect("snapshot_storage.db")
+	cursor = conn.cursor()
+	cursor.execute('''
+		CREATE TABLE IF NOT EXISTS snapshotinfo (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		storageTotal REAL NOT NULL,
+		storageUsed	REAL NOT NULL,
+		storageRemaining REAL NOT NULL,
+		cpuTotal REAL NOT NULL,
+		cpuPerCore TEXT NOT NULL,
+		memoryTotal REAL NOT NULL,
+		memoryUsed REAL NOT NULL,
+		memoryRemaining REAL NOT NULL
+		)
+	''')
+	conn.commit()
+	conn.close()
 
 
 def get_storage_info():
@@ -61,6 +84,84 @@ def get_memory_info():
 		time.sleep(1)
 
 
+@app.route("/run_script", methods=["POST"])
+def run_script():
+	try:
+
+
+
+
+		data = request.get_json()
+		if not data:
+			return jsonify({"error": "no json data received"}), 400
+
+		returned_storage = data["key1"]
+		returned_free_storage = data["key2"]
+		returned_used_storage = data["key3"]
+		returned_cpu_usage = float(data["key4"])
+		returned_cpu_per_core = json.loads(data["key5"])
+		returned_memory = data["key6"]
+		returned_free_memory = float(data["key7"])
+		returned_used_memory = float(data["key8"])
+
+		values = (returned_storage, returned_used_storage,returned_free_storage,
+				  returned_cpu_usage, str(returned_cpu_per_core), returned_memory,
+				  returned_used_memory, returned_free_memory)
+
+		conn = sqlite3.connect("snapshot_storage.db")
+		cursor = conn.cursor()
+		cursor.execute('''
+			INSERT INTO snapshotinfo (
+			storageTotal,
+			storageUsed,
+			storageRemaining,
+			cpuTotal,
+			cpuPerCore,
+			memoryTotal,
+			memoryUsed,
+			memoryRemaining)
+			VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+		
+		
+		''', values)
+
+		cursor.execute("SELECT COUNT(*) FROM snapshotinfo")
+		row_count = cursor.fetchone()[0]
+
+		if row_count > 10:
+			excess_rows = row_count - 10
+			cursor.execute('''
+			        DELETE FROM snapshotinfo
+			        WHERE id IN (
+			            SELECT id FROM snapshotinfo 
+			            ORDER BY id ASC 
+			            LIMIT ?
+			        )
+			    ''', (excess_rows,))
+
+
+		cursor.execute("SELECT * FROM snapshotinfo")
+		rows = cursor.fetchall()
+		print("Contents of snapshotinfo table:")
+		for row in rows:
+			print(row)
+
+		conn.commit()
+		conn.close()
+
+
+		print(returned_storage, returned_free_storage, returned_used_storage,returned_cpu_usage, returned_cpu_per_core, returned_memory, returned_free_memory, returned_used_memory)
+
+		return jsonify({"message": "Data received successfully!", "total storage": returned_storage,"used storage": returned_used_storage, "remaining storage": returned_free_storage, "cpu usage": returned_cpu_usage, "cpu usage per core": returned_cpu_per_core})
+
+	except Exception as e:
+		return jsonify({"error": str(e)}), 500
+
+
+
+
+
+
 
 
 # tells us the web route to trigger the functions
@@ -69,6 +170,7 @@ def get_memory_info():
 #create a function that returns a message
 def index():
 
+	create_database()
 	storage_info = get_storage_info()
 	cpu_info = get_cpu_info()
 

@@ -24,6 +24,7 @@ body{
 	align-items: center;
 	gap: 10%;
 	flex-wrap: wrap;
+	border-radius: 20px;
 }
 
 
@@ -91,7 +92,7 @@ select option{
 </head>
 
 <body>
-<h1>this is my flask app</h1>
+<h1>System Monitoring Dashboard</h1>
 <br>
 
 <div id="topBar">
@@ -103,8 +104,43 @@ select option{
 	<option value="option2">snapshot_2</option>
 </select>
 
-<button>SnapShot</button>
+<button id="snapshotData">Snapshot</button>
 </div>
+
+
+
+<script>
+
+document.getElementById("snapshotData").addEventListener("click", function() {
+	const data = {
+		key1: {{storage.total}},
+		key2: {{storage.free}},
+		key3: {{storage.used}},
+		key4: newCpuUsage,
+		key5: JSON.stringify(newCpuData),
+		key6: {{memory.total}},
+		key7: avalible,
+		key8: used
+	
+	};
+	fetch('/run_script', {
+		method: 'POST',
+		headers: {
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify(data)
+	})
+	.then(response => response.json())
+	.then(result => {
+		console.log(result);
+		alert('script executed sucessfully:' + result.message)
+		})
+		.catch(error => 
+			console.error('error', error));
+	});
+
+
+</script>
 
 
 
@@ -211,6 +247,8 @@ var storageChart = new Chart (ctx, {
 
 <script>
 
+
+
 var goodbye = document.getElementById('cpuChart').getContext('2d');
 
 var cpuChart = new Chart(goodbye, { 
@@ -237,6 +275,9 @@ var cpuChart = new Chart(goodbye, {
 			}
 		}
 	});
+	
+
+var newCpuUsage = 0;
 
 function updateChart() {
 	fetch(window.location.href)
@@ -244,7 +285,8 @@ function updateChart() {
 		.then(html => {
 			let parser = new DOMParser();
 			let doc = parser.parseFromString(html, "text/html");
-			let newCpuUsage = parseFloat(doc.getElementById("cpuValue").textContent);
+			newCpuUsage = parseFloat(doc.getElementById("cpuValue").textContent);
+			
 			
 			let now = new Date().toLocaleTimeString();
 			cpuChart.data.labels.push(now);
@@ -302,6 +344,7 @@ var perCpuBarChart = new Chart(gutentag, {
 		}
 	});
 	
+newCpuData = 0;
 
 function updateBarChart() {
 	fetch(window.location.href)
@@ -309,7 +352,7 @@ function updateBarChart() {
 		.then(html => {
 			let parser = new DOMParser();
 			let doc = parser.parseFromString(html, "text/html");
-			let newCpuData = JSON.parse(doc.getElementById("dataPerCore").textContent);
+			newCpuData = JSON.parse(doc.getElementById("dataPerCore").textContent);
 			
 			perCpuBarChart.data.datasets[0].data = newCpuData;
 			perCpuBarChart.update();
@@ -351,6 +394,10 @@ var memoryChart = new Chart (hello, {
 });
 
 
+used = 0;
+avalible = 0;
+
+
 function updatePieChart() {
 	fetch(window.location.href)
 	.then(response => response.text())
@@ -358,8 +405,8 @@ function updatePieChart() {
 		const parser = new DOMParser();
 		const doc = parser.parseFromString(html, 'text/html');
 		
-		const used = parseFloat(doc.getElementById('usedMemory').textContent);
-		const avalible = parseFloat(doc.getElementById('freeMemory').textContent);
+		used = parseFloat(doc.getElementById('usedMemory').textContent);
+		avalible = parseFloat(doc.getElementById('freeMemory').textContent);
 		
 		memoryChart.data.datasets[0].data = [avalible, used];
 		memoryChart.update();
