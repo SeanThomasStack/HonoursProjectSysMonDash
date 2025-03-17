@@ -93,16 +93,102 @@ select option{
 
 <body>
 <h1>System Monitoring Dashboard</h1>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("submitData").addEventListener("click", function() {
+        
+        var selectedOption = document.getElementById("myDropdown").value;
+        console.log("Selected Option:", selectedOption);
+
+       
+        if (!selectedOption) {
+            alert("Please select an option.");
+            return;
+        }
+
+        
+        const option = {
+            key9: selectedOption 
+        };
+
+        fetch("/option_data", {
+    method: "POST",
+    headers: { "Content-Type": 'application/json' },  
+    body: JSON.stringify({ key9: selectedOption })  
+	})
+		.then(response => response.json())
+		.then(data => console.log(data))
+		.catch(error => console.error("Fetch Error:", error));
+        
+    });
+});
+
+
+</script>
+ 
+  <script>
+        
+        document.addEventListener("DOMContentLoaded", function () {
+    function updateRowCount() {
+        fetch('/row_count')
+            .then(response => response.json())
+            .then(data => {
+                updateDropdownOptions(data.row_count);
+            })
+            .catch(error => console.error('Error fetching row count:', error));
+    }
+
+    function updateDropdownOptions(rowCount) {
+        const dropdown = document.getElementById('myDropdown');
+        if (!dropdown) {
+            console.error("Dropdown element not found!");
+            return;
+        }
+
+        const currentSelection = dropdown.value;
+
+        
+        while (dropdown.options.length) {
+            dropdown.remove(0);
+        }
+
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        defaultOption.textContent = 'Choose an option';
+        dropdown.appendChild(defaultOption);
+
+        
+        for (let i = 1; i <= rowCount; i++) {
+            const option = document.createElement('option');
+            option.value = `snapshot_${i}`;
+            option.textContent = `Snapshot ${i}`;
+            dropdown.appendChild(option);
+        }
+
+        
+        if (currentSelection && dropdown.querySelector(`option[value="${currentSelection}"]`)) {
+            dropdown.value = currentSelection;
+        }
+    }
+
+    
+    setInterval(updateRowCount, 1000);
+});
+    </script>
+
+    
 <br>
 
 <div id="topBar">
 <p id="datetime">hello world</p>
 
 <select id="myDropdown" name="options">
-	<option value="" disabled selected>choose an option</option>
-	<option value="option1">snapshot_1</option>
-	<option value="option2">snapshot_2</option>
+            <option value="" disabled selected>Choose an option</option>
 </select>
+
+<button id="submitData">Submit</button>
 
 <button id="snapshotData">Snapshot</button>
 </div>
