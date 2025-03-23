@@ -201,7 +201,7 @@ def option_data():
 @app.route('/option_data', methods=['POST'])
 def work():
     option_data()
-    webbrowser.open("http://127.0.0.1:5000/snapshot")
+    webbrowser.open("http://localhost:5000/snapshot")
 
 
 
