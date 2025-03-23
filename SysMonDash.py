@@ -284,7 +284,7 @@ thread.daemon = True
 thread.start()
 
 def open_browser():
-    webbrowser.open("http://127.0.0.1:5000/")
+    webbrowser.open("http://localhost:5000/")
 
 #if statement checks if the __name__ has been made = __main__ as it
 #should become this as it is a placeholder for the script name
