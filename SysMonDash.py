@@ -294,7 +294,7 @@ if __name__ == '__main__':
     #network interface not just the loopback, port 5000 is the port where
     #the app is run it is usually this by default, debug allows for messages
     #and auto reloads while being edited
-    app.run(host='', port=5000, debug=True, use_reloader = False)
+    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader = False)
 
 
 
