@@ -1,32 +1,32 @@
-# Use an official Python image as base
+# Use Python image for the container
 FROM python:3.9-slim
 
-# Install dependencies: Git (for cloning) and any required system dependencies
+# Install Git for cloning the repository and required system dependencies
 RUN apt-get update && apt-get install -y git
 
-# Set working directory
+# Set the used directory
 WORKDIR /app
 
-# Clone the repository if it does not already exist
+# Clone the repository for the required files to run the web
 RUN git clone https://github.com/SeanThomasStack/HonoursProjectSysMonDash.git /app/sysmondashDocker; 
 
 
 # Move into the repo directory
 WORKDIR /app/sysmondashDocker
 
-# Ensure the 'templates' directory exists
+# creates the templates directory and ensures its parent directory exists
 RUN mkdir -p templates
 
-# Move HTML files into the 'templates' directory
-RUN mv -f *.html templates/ || true  # Ignore errors if no HTML files exist
+# Move HTML files into the templates directory
+RUN mv -f *.html templates/ || true  # || true means it will ignore errors if the HTML files do not exist
 
-# Install Python dependencies if requirements.txt exists
+# Install Python modules if requirements.txt exists
 RUN if [ -f "requirements.txt" ]; then \
         pip install -r requirements.txt; \
     fi
 
-# Expose port 5000 for Flask
+# Ensure port 5000 is open for connections to the flask site 
 EXPOSE 5000
 
-# Run the Flask application
+# Run the flask python script
 CMD ["python3", "SysMonDash.py"]
