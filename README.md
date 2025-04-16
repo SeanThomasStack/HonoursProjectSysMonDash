@@ -1,5 +1,5 @@
 hello,
-once you get the docker file onto your linux distro
+once you get the docker file onto your linux distrobution
 you will have to move it to where in the file system you want your container to run
 once your happy with the layout open the terminal and navigate to the directory of the Docker file 
 run the following commands (may be requred to use sudo or to install docker if not already done)
